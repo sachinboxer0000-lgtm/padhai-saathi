@@ -1,0 +1,92 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0f1325"><title>पढ़ाई साथी</title><link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#0f1325;--cd:#192039;--c2:#222a49;--tx:#eceff9;--mu:#95a0c4;--ac:#8b9bff;--ok:#4fd9a0;--wn:#ffb757;--er:#ff7b8a;--bd:#2c3558}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);font:16px/1.6 'Noto Sans Devanagari',Mukta,system-ui,sans-serif;padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+#v{padding:calc(16px + env(safe-area-inset-top)) 16px 16px;max-width:560px;margin:auto}
+h1{font-size:24px;font-weight:700;margin-bottom:4px}h2{font-size:17px;font-weight:600;margin:20px 0 8px}
+.mu{color:var(--mu);font-size:14px}.cd{background:var(--cd);border-radius:18px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:10px}.sp{flex:1;min-width:0}
+button,select,input{font:inherit;color:var(--tx);background:var(--c2);border:1px solid var(--bd);border-radius:12px;padding:9px 12px}
+button{cursor:pointer}button.p{background:var(--ac);color:#0f1325;border:0;font-weight:600}button.g{background:none;border:0;color:var(--mu)}
+.ring{width:150px;height:150px;border-radius:50%;display:grid;place-items:center;margin:8px auto}
+.ring div{width:118px;height:118px;border-radius:50%;background:var(--bg);display:grid;place-items:center;text-align:center;line-height:1.2}
+.ring b{font-size:34px}.bar{height:8px;background:var(--c2);border-radius:4px;overflow:hidden;margin-top:6px}.bar i{display:block;height:8px;background:var(--ac)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}.chips button{white-space:nowrap;border-radius:20px;font-size:14px}.chips .on{background:var(--ac);color:#0f1325;border:0}
+.st{border-radius:20px;font-size:13px;padding:3px 12px;border:0;white-space:nowrap}.s0{background:var(--c2);color:var(--mu)}.s1{background:#4a3a1c;color:var(--wn)}.s2{background:#173e35;color:var(--ok)}
+.ln{padding:10px 12px;border-radius:12px;margin-bottom:6px;background:var(--cd);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.ln.h{background:#3a3560;border-left:4px solid var(--wn)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--cd);border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;color:var(--mu);font-size:13px;padding:6px 0;border-radius:12px}nav .on{color:var(--ac);background:var(--c2)}nav b{display:block;font-size:20px;line-height:1.2}
+.sh{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;z-index:9}.sh>div{background:var(--cd);width:100%;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
+.sh button{display:block;width:100%;text-align:left;margin-top:8px;padding:13px}
+.tm{font-size:64px;font-weight:700;text-align:center;line-height:1.1}
+#t{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:14px;z-index:20;display:none;max-width:90%;font-size:14px}
+input[type=number]{width:62px}.ans{white-space:pre-wrap;font-size:15px;margin-top:8px;color:var(--ok)}
+</style></head><body><div id="v"></div><div id="t"></div>
+<nav id="nv"></nav><input type="file" id="f1" accept=".txt" hidden><input type="file" id="f2" accept=".txt" hidden>
+<script>
+const $=s=>document.querySelector(s),T=()=>new Date().toISOString().slice(0,10),esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let S=JSON.parse(localStorage.sp||'null')||{ch:{},dt:[],key:'',mn:{},sch:[{t:'s',n:'',m:25},{t:'b',n:'ब्रेक',m:5},{t:'s',n:'',m:25},{t:'b',n:'ब्रेक',m:10}]};
+const save=()=>localStorage.sp=JSON.stringify(S),subs=()=>Object.keys(S.ch);
+let tab='home',sub=null,op=null,run=null,sheet=null;
+const SN=['अभी बाकी','चल रहा','पूरा हुआ'],RV=[1,7,30];
+function toast(m){const t=$('#t');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',2600)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+function parse(tx){const o={};let c=null;tx.split('\n').forEach(l=>{l=l.trim();let m;if(m=l.match(/^##\s*(.+)/)){c=m[1];o[c]=o[c]||[]}else if(c&&(m=l.match(/^\d+\.\s*(.+)\s—\s(पूरा पढ़ लिया|बाकी है|चल रहा है)$/))){const s=m[2]=='पूरा पढ़ लिया'?2:m[2]=='चल रहा है'?1:0;o[c].push({n:m[1],s,d:s==2?T():'',r:[0,0,0],nt:'',hl:[]})}});return o}
+function pct(a){let t=0,d=0;a.forEach(s=>(S.ch[s]||[]).forEach(c=>{t++;if(c.s==2)d++}));return[d,t]}
+function dueList(){const o=[];subs().forEach(s=>S.ch[s].forEach((c,i)=>{if(c.s==2&&c.d)RV.forEach((n,k)=>{if(!c.r[k]&&T()>=addDays(c.d,n))o.push({s,i,k,c})})}));return o}
+function minsToday(){let t=0;for(const s in S.mn)t+=S.mn[s][T()]||0;return t}
+function home(){const[d,t]=pct(subs()),p=t?Math.round(d*100/t):0,dl=dueList();
+if(!t)return`<h1>पढ़ाई साथी</h1><p class=mu>अपनी स्टडी फ़ाइल जोड़ो और शुरू करो।</p><div class=cd><button class=p data-a=imp>txt फ़ाइल इम्पोर्ट करो</button></div>`;
+return`<h1>नमस्ते सचिन</h1><p class=mu>आज ${minsToday()} मिनट पढ़ाई हुई</p>
+<div class=ring style="background:conic-gradient(var(--ac) ${p*3.6}deg,var(--c2) 0)"><div><span><b>${p}%</b><br><span class=mu>${d}/${t} अध्याय</span></span></div></div>
+<h2>आज दोहराना है (${dl.length})</h2>${dl.length?dl.slice(0,12).map(x=>`<div class="cd row"><div class=sp>${x.c.n}<div class=mu>${x.s} · ${['24 घंटे','7 दिन','1 महीने'][x.k]} वाली दोहराई</div></div><button class=p data-a=rev data-s="${x.s}" data-i=${x.i} data-k=${x.k}>हो गया</button></div>`).join(''):'<div class="cd mu">आज कोई दोहराई बाकी नहीं।</div>'}
+<h2>विषय की प्रगति</h2>${subs().map(s=>{const[a,b]=pct([s]);return`<div class=cd><div class=row><span class=sp>${s}</span><span class=mu>${a}/${b}</span></div><div class=bar><i style="width:${b?a*100/b:0}%"></i></div></div>`}).join('')}`}
+function chap(){if(!subs().length)return home();sub=sub||subs()[0];
+if(op){const c=S.ch[op.s][op.i],ls=c.nt.split('\n').filter(x=>x.trim());
+return`<div class=row><button class=g data-a=back>← वापस</button></div><h1>${c.n}</h1><p class=mu>${op.s} · किसी लाइन पर देर तक दबाओ</p><div style="margin:12px 0"><button data-a=nt>नोट्स (txt) जोड़ो</button></div>${ls.length?ls.map((l,i)=>`<div class="ln${c.hl.includes(i)?' h':''}" data-l=${i}>${esc(l)}</div>`).join(''):'<div class="cd mu">अभी नोट्स नहीं हैं। ऊपर से txt फ़ाइल जोड़ो।</div>'}`}
+return`<h1>अध्याय</h1><div class=chips>${subs().map(s=>`<button data-a=sub data-s="${s}" class="${s==sub?'on':''}">${s}</button>`).join('')}</div><p class=mu style="margin-bottom:8px">${sub}</p>
+${S.ch[sub].map((c,i)=>`<div class="cd row"><span class=sp data-a=open data-i=${i}>${c.n}</span><button class="st s${c.s}" data-a=st data-i=${i}>${SN[c.s]}</button></div>`).join('')}
+<button data-a=imp style="margin-top:8px">फ़ाइल दोबारा इम्पोर्ट</button>`}
+function timer(){const o=subs().length?subs():['इतिहास','राजनीति विज्ञान','हिन्दी','अंग्रेज़ी'];
+if(run){const b=S.sch[run.i],l=Math.max(0,Math.round((run.end-Date.now())/1000)),n=S.sch[run.i+1];
+return`<h1>${b.t=='s'?'पढ़ाई चल रही है':'ब्रेक'}</h1><p class=mu>${b.n}</p><div class="tm" style="margin:30px 0;color:${b.t=='s'?'var(--ac)':'var(--ok)'}">${String(Math.floor(l/60)).padStart(2,'0')}:${String(l%60).padStart(2,'0')}</div><div class=bar><i style="width:${100-l/(b.m*60)*100}%"></i></div><p class=mu style="margin:12px 0">${n?'अगला: '+n.n+' ('+n.m+' मि.)':'आखिरी सत्र'}</p><button data-a=stop style="width:100%">रोको</button>`}
+const tot=S.sch.reduce((a,b)=>a+b.m,0);
+return`<h1>टाइमर</h1><p class=mu>कुल ${Math.floor(tot/60)} घं ${tot%60} मि · आज ${minsToday()} मि. पढ़ाई</p><div style="margin:12px 0">${S.sch.map((b,i)=>`<div class="row" style="margin-bottom:8px">${b.t=='s'?`<select class=sp data-f=n data-i=${i}>${o.map(x=>`<option${(b.n||o[0])==x?' selected':''}>${x}</option>`).join('')}</select>`:'<span class=sp style="padding-left:12px" >ब्रेक</span>'}<input type=number min=1 max=180 value=${b.m} data-f=m data-i=${i}><button class=g data-a=del data-i=${i}>✕</button></div>`).join('')}</div>
+<div class=row><button class=sp data-a=addS>+ विषय</button><button class=sp data-a=addB>+ ब्रेक</button></div><label class=row style="margin-top:14px"><input type=checkbox style="width:22px;height:22px" data-f=strict ${S.strict?'checked':''}><span class=sp>सख़्त मोड: पढ़ाई में दूसरे ऐप बंद</span></label><button class=p style="width:100%;margin-top:10px;padding:14px" data-a=go>शुरू करो</button>`}
+function doubts(){const g={};S.dt.forEach(d=>{(g[d.s+'|'+d.c]=g[d.s+'|'+d.c]||[]).push(d)});
+return`<h1>शंकाएँ</h1><p class=mu>लॉन्ग प्रेस से जोड़ी गई लाइनें</p><div class=cd><div class=mu>DeepSeek API key</div><input type=password data-f=key value="${S.key}" placeholder="sk-..." style="width:100%;margin-top:6px"><div class=mu style="margin-top:6px">key के बिना संदेश कॉपी होकर DeepSeek खुलेगा।</div></div>
+${S.dt.length?Object.keys(g).map(k=>{const[s,c]=k.split('|');return`<h2>${c}</h2>${g[k].map(d=>`<div class=cd><div>${esc(d.l)}</div>${d.a?`<div class=ans>${esc(d.a)}</div>`:'<div class=mu>जवाब बाकी</div>'}<button class=g data-a=dd data-id=${d.id}>हटाओ</button></div>`).join('')}<button class=p data-a=askall data-k="${k}">इस अध्याय की सब शंकाएँ पूछो</button>`}).join(''):'<div class="cd mu">कोई शंका नहीं। अध्याय में लाइन पर देर तक दबाओ।</div>'}`}
+function draw(){$('#v').innerHTML={home,chap,timer,doubts}[tab]();$('#nv').innerHTML=[['home','⌂','होम'],['chap','☰','अध्याय'],['timer','◔','टाइमर'],['doubts','?','शंकाएँ']].map(x=>`<button data-a=tab data-t=${x[0]} class="${tab==x[0]?'on':''}"><b>${x[1]}</b>${x[2]}</button>`).join('')}
+async function ask(p){if(!S.key){navigator.clipboard&&navigator.clipboard.writeText(p);toast('संदेश कॉपी हुआ। DeepSeek में पेस्ट करो');(window.Android?Android.open('https://chat.deepseek.com'):window.open('https://chat.deepseek.com'));return null}
+try{const r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+S.key},body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:'तुम RBSE कक्षा 12 के शिक्षक हो। आसान हिंदी में छोटा उत्तर दो।'},{role:'user',content:p}]})});return(await r.json()).choices[0].message.content}catch(e){toast('जवाब नहीं आया। इंटरनेट या key जाँचें');return null}}
+const pr=(s,c,l)=>`विषय: ${s}\nअध्याय: ${c}\nइस पंक्ति को आसान हिंदी में समझाओ:\n"${l}"`;
+function addDt(l,a){const c=S.ch[op.s][op.i];S.dt.push({id:Date.now()+Math.random(),s:op.s,c:c.n,l,a:a||''});save()}
+function showSheet(i){const c=S.ch[op.s][op.i],l=c.nt.split('\n').filter(x=>x.trim())[i];sheet={i,l,t:Date.now()};const d=document.createElement('div');d.className='sh';d.id='sh';d.innerHTML=`<div><div class=mu>${esc(l)}</div><button data-a=sa1 class=p>DeepSeek से अभी पूछो</button><button data-a=sa2>शंका में जोड़ो</button><button data-a=sa3>हाइलाइट करो</button><button data-a=sa0 class=g>बंद करो</button><div id=sa class=ans></div></div>`;document.body.appendChild(d);navigator.vibrate&&navigator.vibrate(30)}
+const cl=()=>{const e=$('#sh');e&&e.remove()};
+function beep(){try{const a=new AudioContext();[0,.4,.8].forEach(t=>{const o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start(a.currentTime+t);o.stop(a.currentTime+t+.25)})}catch(e){}navigator.vibrate&&navigator.vibrate([400,200,400])}
+setInterval(()=>{if(!run)return;if(run.end-Date.now()<=0){const b=S.sch[run.i];if(b.t=='s'){const n=b.n||subs()[0]||'पढ़ाई';S.mn[n]=S.mn[n]||{};S.mn[n][T()]=(S.mn[n][T()]||0)+b.m;save()}beep();run.i++;if(run.i>=S.sch.length){run=null;toast('आज का शेड्यूल पूरा। शाबाश!')}else run.end=Date.now()+S.sch[run.i].m*6e4}if(tab=='timer')draw()},500);
+let lp;const lps=e=>{const l=e.target.closest('.ln');if(l)lp=setTimeout(()=>showSheet(+l.dataset.l),450)},lpe=()=>clearTimeout(lp);
+['touchstart','mousedown'].forEach(x=>document.addEventListener(x,lps));['touchend','touchmove','mouseup'].forEach(x=>document.addEventListener(x,lpe));document.addEventListener('contextmenu',e=>{if(e.target.closest('.ln'))e.preventDefault()});
+function rd(f,cb){const r=new FileReader();r.onload=()=>cb(r.result);r.readAsText(f)}
+$('#f1').onchange=e=>{rd(e.target.files[0],t=>{const o=parse(t);if(!Object.keys(o).length)return toast('फ़ाइल का रूप नहीं पहचाना');S.ch=o;save();sub=null;tab='chap';op=null;draw();toast('अध्याय जुड़ गए')})};
+$('#f2').onchange=e=>{rd(e.target.files[0],t=>{S.ch[op.s][op.i].nt=t;save();draw();toast('नोट्स जुड़ गए')})};
+document.addEventListener('change',e=>{const f=e.target.dataset.f,i=e.target.dataset.i;if(f=='strict'){S.strict=e.target.checked;save()}if(f=='key'){S.key=e.target.value.trim();save()}if(f=='m'){S.sch[i].m=Math.max(1,Math.min(180,+e.target.value||1));save()}if(f=='n'){S.sch[i].n=e.target.value;save()}});
+document.addEventListener('click',async e=>{if(sheet&&Date.now()-sheet.t<600&&e.target.closest('.sh'))return;const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,d=b.dataset,i=+d.i;
+if(a=='tab'){tab=d.t;op=null}else if(a=='sub')sub=d.s;else if(a=='imp')return $('#f1').click();else if(a=='nt')return $('#f2').click();
+else if(a=='open')op={s:sub,i};
+else if(a=='back'){const c=S.ch[op.s][op.i],p=S.dt.filter(x=>x.s==op.s&&x.c==c.n&&!x.a);op=null;draw();if(p.length&&confirm(p.length+' शंकाएँ सेव हैं। अभी DeepSeek से पूछें?')){tab='doubts';draw();return askAll(p)}return}
+else if(a=='st'){const c=S.ch[sub][i];c.s=(c.s+1)%3;if(c.s==2){c.d=T();c.r=[0,0,0]}save()}
+else if(a=='rev'){S.ch[d.s][i].r[+d.k]=1;save()}
+else if(a=='addS')S.sch.push({t:'s',n:'',m:25});else if(a=='addB')S.sch.push({t:'b',n:'ब्रेक',m:5});else if(a=='del')S.sch.splice(i,1);
+else if(a=='go'){if(!S.sch.length)return toast('पहले सत्र जोड़ो');run={i:0,end:Date.now()+S.sch[0].m*6e4};if(window.Android){let q=Date.now();Android.cancel();S.sch.forEach((b,k)=>{q+=b.m*6e4;Android.alarm(k,q,b.t=='s'?'पढ़ाई पूरी हुई। ब्रेक लो':'ब्रेक खत्म। पढ़ाई शुरू करो')});if(S.strict&&!Android.strict(true,q))toast('अनुमति दो, फिर शुरू करो दोबारा दबाओ')}}
+else if(a=='stop'){run=null;if(window.Android){Android.cancel();Android.strict(false,0)}}else if(a=='dd'){S.dt=S.dt.filter(x=>x.id!=d.id);save()}
+else if(a=='askall'){const[s,c]=d.k.split('|');return askAll(S.dt.filter(x=>x.s==s&&x.c==c&&!x.a))}
+else if(a=='sa0')return cl();
+else if(a=='sa2'){addDt(sheet.l);cl();return toast('शंका सूची में जुड़ गई')}
+else if(a=='sa3'){const c=S.ch[op.s][op.i];c.hl.includes(sheet.i)?c.hl=c.hl.filter(x=>x!=sheet.i):c.hl.push(sheet.i);save();cl()}
+else if(a=='sa1'){$('#sa').textContent='सोच रहा हूँ…';const r=await ask(pr(op.s,S.ch[op.s][op.i].n,sheet.l));if(r){addDt(sheet.l,r);$('#sa').textContent=r}else $('#sa').textContent='';return}
+save();draw()});
+async function askAll(l){toast(l.length+' शंकाएँ पूछ रहा हूँ…');for(const d of l){const r=await ask(pr(d.s,d.c,d.l));if(!r)break;d.a=r;save();draw()}}
+draw();
+</script></body></html>
