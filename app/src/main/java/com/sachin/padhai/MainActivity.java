@@ -25,7 +25,7 @@ Intent s=new Intent(MainActivity.this,StrictService.class);
 if(!on){stopService(s);return true;}
 if(!Settings.canDrawOverlays(MainActivity.this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return false;}
 AppOpsManager a=(AppOpsManager)getSystemService(APP_OPS_SERVICE);
-if(a.checkOpNoThrow("android:get_usage_stats",Process.myUid(),getPackageName())!=AppOpsManager.MODE_ALLOWED){startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));return false;}
+if(a.checkOpNoThrow("android:get_usage_stats",android.os.Process.myUid(),getPackageName())!=AppOpsManager.MODE_ALLOWED){startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));return false;}
 s.putExtra("u",until);if(Build.VERSION.SDK_INT>=26)startForegroundService(s);else startService(s);return true;}
 @JavascriptInterface public void open(String u){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(u)));}
 }}
